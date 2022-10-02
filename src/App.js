@@ -1,31 +1,51 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './index.scss';
 
-function Collection({ name, images }) {
-  return (
-    <div className="collection">
-      <img className="collection__big" src={images[0]} alt="Item" />
-      <div className="collection__bottom">
-        <img className="collection__mini" src={images[1]} alt="Item" />
-        <img className="collection__mini" src={images[2]} alt="Item" />
-        <img className="collection__mini" src={images[3]} alt="Item" />
-      </div>
-      <h4>{name}</h4>
-    </div>
-  );
-}
+import Collection from './Collection';
+
+const cats = [ // Массив категорий
+  { "name": "Все" },
+  { "name": "Море" },
+  { "name": "Горы" },
+  { "name": "Архитектура" },
+  { "name": "Города" }
+];
 
 function App() {
+  const [searchValue, setSearchValue] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [categoryId, setCategoryId] = React.useState(0);
+  const [collections, setCollections] = React.useState([]);
+
+  React.useEffect(() => {
+    setIsLoading(true);
+    fetch(`https://631263c7f5cba498da921a45.mockapi.io/Photos?${categoryId ? `category=${categoryId}` : ''}`)
+    .then((res) => {
+      res.json();
+    })
+    .then((json) => {
+      setCollections(json);
+    })
+    .catch((err) => {
+      console.warn(err);
+      alert("Ошибка при загрузке данных");
+    })
+    .finally(() => {
+      setIsLoading(true);
+    })
+    
+  }, [categoryId]);
+
   return (
     <div className="App">
       <h1>Моя коллекция фотографий</h1>
       <div className="top">
         <ul className="tags">
-          <li className="active">Все</li>
-          <li>Горы</li>
-          <li>Море</li>
-          <li>Архитектура</li>
-          <li>Города</li>
+          {
+            cats.map((obj,i) => (
+              <li onClick={() => setCategoryId(i)} className={categoryId === i ? 'active' : ''} key={obj.name} >{obj.name}</li>
+            ))
+          }
         </ul>
         <input className="search-input" placeholder="Поиск по названию" />
       </div>
